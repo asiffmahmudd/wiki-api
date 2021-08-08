@@ -77,12 +77,15 @@ app.route("/article/:articleTitle")
         {title: req.params.articleTitle},
         {title: req.body.title, content: req.body.content},
         {overwrite: true},
-        (err) => {
+        (err, result) => {
             if(err){
                 res.send(err)
             }
-            else{
+            else if(result.modifiedCount > 0){
                 res.send("Updated successfully")
+            }
+            else{
+                res.send("Article not found")
             }
         }
     )
@@ -92,12 +95,15 @@ app.route("/article/:articleTitle")
     Article.findOneAndUpdate(
         {title: req.params.articleTitle},
         {$set: req.body},
-        (err) => {
+        (err, result) => {
             if(err){
                 res.send(err)
             }
-            else{
+            else if(result.modifiedCount > 0){
                 res.send("Successfully updated articles")
+            }
+            else{
+                res.send("Article not found")
             }
         }
     )
@@ -106,12 +112,15 @@ app.route("/article/:articleTitle")
 .delete((req,res) => {
     Article.deleteOne(
         {title: req.params.articleTitle},
-        (err) => {
+        (err, result) => {
             if(err){
                 res.send(err)
             }
-            else{
+            else if(result.deletedCount > 0){
                 res.send("Successfully deleted articles")
+            }
+            else{
+                res.send("Article not found")
             }
         }
     )
