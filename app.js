@@ -2,6 +2,7 @@ const mongoose = require("mongoose")
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const { response } = require("express");
 require('dotenv').config()
 const app = express();
 
@@ -13,14 +14,8 @@ app.use(express.static("public"));
 mongoose.connect("mongodb://localhost:27017/wikiDB", {useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false})
 
 const articleSchema = {
-    title: {
-        type: String,
-        required: true
-    },
-    content: {
-        type: String,
-        required: true
-    }
+    title: String,
+    content: String
 }
 
 const Article = mongoose.model("Article", articleSchema)
@@ -62,6 +57,64 @@ app.route("/articles")
             res.send("Deleted all articles successfully")
         }
     })
+});
+
+app.route("/article/:articleTitle")
+
+.get((req,res) =>{
+    Article.findOne({title:req.params.articleTitle}, (err, foundArticle) => {
+        if(foundArticle)
+            res.send(foundArticle)
+        else{
+            res.send("No article found with that title")
+        }
+    })
+})
+
+.put((req,res) => {
+    console.log(req.params.articleTitle)
+    Article.findOneAndUpdate(
+        {title: req.params.articleTitle},
+        {title: req.body.title, content: req.body.content},
+        {overwrite: true},
+        (err) => {
+            if(err){
+                res.send(err)
+            }
+            else{
+                res.send("Updated successfully")
+            }
+        }
+    )
+})
+
+.patch((req,res) => {
+    Article.findOneAndUpdate(
+        {title: req.params.articleTitle},
+        {$set: req.body},
+        (err) => {
+            if(err){
+                res.send(err)
+            }
+            else{
+                res.send("Successfully updated articles")
+            }
+        }
+    )
+})
+
+.delete((req,res) => {
+    Article.deleteOne(
+        {title: req.params.articleTitle},
+        (err) => {
+            if(err){
+                res.send(err)
+            }
+            else{
+                res.send("Successfully deleted articles")
+            }
+        }
+    )
 })
 
 app.listen(process.env.PORT || 3000, function() {
